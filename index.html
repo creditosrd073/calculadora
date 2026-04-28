@@ -374,32 +374,38 @@ function calcular() {
 
 
 function copiarWhatsApp() {
-    // 1. Obtener el número desde el input de la vista
+    // 1. Obtener el número desde el input
     const inputTelef = document.getElementById('telefono_cliente');
+    const inicialValue = document.getElementById('inicial').value || '0.00';
     
-    // Limpiamos el valor de cualquier carácter que no sea número (quita espacios, guiones, etc.)
+    // Limpiamos el número: solo permitimos dígitos
     let numero = inputTelef.value.toString().replace(/\D/g, ''); 
 
-
-    // 4. Obtener los datos actuales de los cálculos
+    // 2. Obtener los datos actuales de los cálculos
     const cuota = document.getElementById('res-cuota').innerText;
     const financiado = document.getElementById('res-financiar').innerText;
     const meses = document.getElementById('plazo').value;
     const frecSelect = document.getElementById('frecuencia');
     const frecTxt = frecSelect.options[frecSelect.selectedIndex].text;
 
-    // 5. Construir el cuerpo del mensaje
-    const texto = `📊 *COTIZACIÓN DE PRÉSTAMO*\n` +
-                `----------------------------\n` +
-                  `💰 *Monto a prestar:* ${financiado}\n` +
-                  `🗓 *Plazo:* ${meses} Meses\n` +
-                  `🔄 *Frecuencia:* ${frecTxt}\n` +
-                  `💵 *Cuota:* ${cuota}\n` +
-                `----------------------------\n` +
-                `_Generado desde el Sistema de Cotizaciones de CrediPay_`;
+   // 4. Construir el cuerpo del mensaje con emojis altamente compatibles
+const texto = `*COTIZACIÓN DE PRÉSTAMO CREDIPAY*
+----------------------------------------
+* *Inicial:* ${inicialValue}
+* *Monto a Financiar:* ${financiado}
+* *Plazo:* ${meses} Meses
+* *Frecuencia:* ${frecTxt}
+* *Cuota Fija:* ${cuota}
+----------------------------------------
 
-    // 6. Construir el enlace final y abrir en pestaña nueva
-    // La estructura correcta es: wa.me/numero?text=mensaje_codificado
+*¡Continúe su proceso ahora!*
+Complete su solicitud en el siguiente enlace:
+https://solicitud.prestamoscloud.com/solicitudes/i/credipay-
+
+Nuestros representantes le contactarán en un plazo de *24 a 72 horas*.`;
+
+    // 5. Construir el enlace final
+    // encodeURIComponent se encarga de que los emojis y saltos de línea no den error
     const urlFinal = `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
     
     window.open(urlFinal, '_blank');
