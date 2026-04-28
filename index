@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador de Préstamos Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://jsdelivr.net">
+    <style>
+    @import url('https://googleapis.com');
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .card { background: white; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+    
+    /* Estilos para impresión OPTIMIZADOS */
+    @media print {
+        /* Ocultar elementos innecesarios */
+        .no-print, #btn-volver, #btn-crear, #form-parametros, header p, .bi {
+            display: none !important;
+        }
+
+        /* Configuración de página */
+        @page {
+            margin: 1cm;
+            size: portrait;
+        }
+
+        body { 
+            background-color: white !important; 
+            padding: 0 !important; 
+            margin: 0 !important;
+            color: black;
+        }
+
+        /* Ajuste de contenedores */
+        .max-w-6xl { max-width: 100% !important; width: 100% !important; margin: 0 !important; }
+        .grid { display: block !important; } /* Elimina el grid para que la tabla use todo el ancho */
+        .lg\:col-span-2 { width: 100% !important; }
+        
+        /* Encabezado compacto */
+        header { 
+            margin-bottom: 15px !important; 
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        h1 { 
+            font-size: 16pt !important; 
+            margin: 0 !important; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Resumen de totales compacto */
+        .grid-cols-1.md\:grid-cols-3 { 
+            display: flex !important; 
+            gap: 10px !important; 
+            margin-bottom: 15px !important;
+        }
+        .grid-cols-1.md\:grid-cols-3 > div { 
+            flex: 1; 
+            padding: 8px !important; 
+            border: 1px solid #ddd !important;
+            border-radius: 5px !important;
+        }
+        .grid-cols-1.md\:grid-cols-3 h3 { font-size: 14pt !important; margin: 0 !important; }
+        .grid-cols-1.md\:grid-cols-3 p { font-size: 8pt !important; margin: 0 !important; }
+
+        /* Tabla profesional */
+        .card { 
+            box-shadow: none !important; 
+            border: none !important; 
+        }
+        table { 
+            width: 100% !important; 
+            border-collapse: collapse !important;
+            font-size: 9pt !important; 
+        }
+        th { 
+            background-color: #f8f9fa !important; 
+            color: black !important; 
+            border: 1px solid #ddd !important;
+            padding: 6px !important;
+            text-transform: uppercase;
+        }
+        td { 
+            border: 1px solid #eee !important; 
+            padding: 5px !important;
+        }
+        
+        /* Evitar que las filas se corten entre páginas */
+        tr { page-break-inside: avoid; }
+    }
+</style>
+
+</head>
+<body class="p-4 md:p-8">
+
+<!-- 🖼️ CONTENEDOR DEL LOGO -->
+    <div class="flex justify-center mb-6">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <!-- Reemplaza src con la ruta de tu logo -->
+            <img src="{{ asset('storage\logos\jw0KizpRdaMqTuVAnk8KLjbV89B6hHUtoFVHS5qi.jpg') }}" alt="Logo Empresa" class="h-20 w-auto object-contain">
+        </div>
+    </div>
+
+    <!-- BOTONES DE NAVEGACIÓN -->
+    <div class="max-w-6xl mx-auto flex justify-end gap-3 mb-6 no-print">
+        <a href="{{ route('admin.prestamos.create') }}" id="btn-crear"
+        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all text-sm">
+            <i class="bi bi-plus-circle me-2"></i> Crear Préstamo
+        </a>
+        <a href="{{ route('admin.prestamos.index') }}" id="btn-volver"
+        class="inline-flex items-center px-4 py-2 bg-[#0164fe] hover:bg-[#0152d1] text-white font-bold rounded-lg shadow-md transition-all text-sm">
+            <i class="bi bi-arrow-left-circle me-2"></i> Volver al Sistema
+        </a>
+    </div>
+
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-800">Cotización de Amortización</h1>
+            <p class="text-gray-500">Documento informativo de plan de pagos proyectado</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+
+            <!-- FORMULARIO DE PARÁMETROS -->
+            <div id="form-parametros" class="card p-6 h-fit no-print">
+                <h2 class="text-xl font-semibold mb-6 flex items-center text-gray-700">
+                    <i class="bi bi-sliders2-vertical me-2 text-[#0164fe]"></i> Datos de la Solicitud
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Monto del Préstamo</label>
+                        <div class="relative mt-1">
+                            <span class="absolute left-3 top-2 text-gray-400">$</span>
+                            <input type="number" id="monto" class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value=" ">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600">Inicial ($)</label>
+                            <input type="number" id="inicial" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none" value="0">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600">Tasa Mensual (%)</label>
+                            <input type="number" id="tasa" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none" value="10" step="0.01">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Plazo (Meses)</label>
+                        <input type="number" id="plazo" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none" value="6">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Frecuencia de Pago</label>
+                        <select id="frecuencia" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none bg-white">
+                            <option value="1">Mensual</option>
+                            <option value="2">Quincenal</option>
+                            <option value="4">Semanal</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600">Sistema de Amortización</label>
+                        <select id="sistema" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none bg-white">
+                            <option value="simple">Simple (Sobre Capital)</option>    
+                            <!--  <option value="frances">Francés (Cuota Fija)</option>  -->
+                        </select>
+                    </div>
+
+                    <button onclick="calcular()" class="w-full bg-[#0164fe] hover:bg-[#0152d1] text-white font-bold py-3 rounded-lg transition shadow-lg">
+                        <i class="bi bi-calculator me-2"></i> CALCULAR
+                    </button>
+                </div>
+            </div>
+
+            <!-- RESULTADOS Y CRONOGRAMA -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- RESUMEN RÁPIDO -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="card p-4 text-center border-t-4 border-blue-500">
+                        <p class="text-gray-500 text-xs font-bold uppercase">Cuota Estimada</p>
+                        <h3 id="res-cuota" class="text-2xl font-bold text-blue-600">$0.00</h3>
+                    </div>
+                    <div class="card p-4 text-center border-t-4 border-emerald-500">
+                        <p class="text-gray-500 text-xs font-bold uppercase">Monto Financiado</p>
+                        <h3 id="res-financiar" class="text-2xl font-bold text-emerald-600">$0.00</h3>
+                    </div>
+                    <div class="card p-4 text-center border-t-4 border-rose-500">
+                        <p class="text-gray-500 text-xs font-bold uppercase">Total Intereses</p>
+                        <h3 id="res-interes" class="text-2xl font-bold text-rose-600">$0.00</h3>
+                    </div>
+                </div>
+
+                <!-- TABLA -->
+                <div class="card overflow-hidden">
+                    <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+                        <h2 class="font-bold text-gray-700"><i class="bi bi-table me-2"></i>Tabla de Amortización</h2>
+                        <div class="flex gap-2 no-print">
+                            <button onclick="window.print()" class="text-sm bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-bold transition">
+                                <i class="bi bi-printer me-1"></i> Imprimir
+                            </button>
+                            <button onclick="copiarWhatsApp()" class="text-sm bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold transition">
+                                <i class="bi bi-whatsapp me-1"></i> Compartir
+                            </button>
+                        </div>
+
+                        <div class="mb-4">
+    <label class="block text-sm font-semibold text-gray-600">WhatsApp del Cliente</label>
+    <div class="relative mt-1">
+        <span class="absolute left-3 top-2 text-gray-400"><i class="bi bi-whatsapp"></i></span>
+        <input type="number" id="telefono_cliente" class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Ej: 8091234567">
+    </div>
+    <div class="text-[10px] text-gray-500 mt-1">Incluya el código de área sin el signo +</div>
+</div>
+
+                    </div>
+                    <!-- Eliminado max-h para que crezca hacia abajo sin scroll -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-100 shadow-sm">
+                                <tr>
+                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase">#</th>
+                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase">Cuota</th>
+                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase">Interés</th>
+                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase">Capital</th>
+                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-body" class="divide-y divide-gray-100">
+                                <!-- JS llenará esto -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const formatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2
+        });
+
+    // Escuchar cuando se escribe en el monto para calcular el 30% de inicial
+document.getElementById('monto').addEventListener('input', function() {
+    const monto = parseFloat(this.value) || 0;
+    const inicialInput = document.getElementById('inicial');
+    
+    // Calcula el 30% y lo asigna al campo inicial
+    inicialInput.value = (monto * 0.30).toFixed(2);
+    
+    // Opcional: Recalcular la tabla automáticamente al cambiar el monto
+    calcular(); 
+});
+
+// Listado de todos los IDs de tus campos
+const camposEscucha = ['monto', 'inicial', 'tasa', 'plazo', 'frecuencia', 'sistema'];
+
+camposEscucha.forEach(id => {
+    const elemento = document.getElementById(id);
+    if (!elemento) return;
+
+    // Determinamos el evento: 'change' para los select y 'input' para los demás
+    const tipoEvento = elemento.tagName === 'SELECT' ? 'change' : 'input';
+
+    elemento.addEventListener(tipoEvento, function() {
+        // Lógica específica para el monto: autocalcular el 30% de inicial
+        if (id === 'monto') {
+            const monto = parseFloat(this.value) || 0;
+            const inicialInput = document.getElementById('inicial');
+            if (inicialInput) {
+                inicialInput.value = (monto * 0.30).toFixed(2);
+            }
+        }
+        
+        // Ejecutar el cálculo general automáticamente
+        calcular(); 
+    });
+});
+
+// Ejecutar el cálculo una vez al cargar la página por si hay valores por defecto
+window.addEventListener('DOMContentLoaded', calcular);
+
+
+function calcular() {
+    const montoTotal = parseFloat(document.getElementById('monto').value) || 0;
+    const inicial = parseFloat(document.getElementById('inicial').value) || 0;
+
+    // --- NUEVA VALIDACIÓN ---
+    if (inicial > montoTotal) {
+        document.getElementById('tabla-body').innerHTML = `
+            <tr>
+                <td colspan="5" class="p-6 text-center text-rose-500 font-bold">
+                    ⚠️ El pago inicial no puede ser mayor al monto del préstamo
+                </td>
+            </tr>`;
+        document.getElementById('res-cuota').innerText = "0.00";
+        document.getElementById('res-financiar').innerText = "0.00";
+        document.getElementById('res-interes').innerText = "0.00";
+        return; // Detiene la ejecución aquí
+    }
+
+    const tasaMensual = parseFloat(document.getElementById('tasa').value) / 100;
+    const mesesPlazo = parseFloat(document.getElementById('plazo').value) || 0;
+    const frecuenciaFactor = parseInt(document.getElementById('frecuencia').value); 
+    const sistema = document.getElementById('sistema').value;
+
+    const capitalAFinanciar = montoTotal - inicial;
+    const numeroPagos = mesesPlazo * frecuenciaFactor;
+    const tasaPeriodica = tasaMensual / frecuenciaFactor;
+
+    // Validación extra para evitar errores matemáticos
+    if (capitalAFinanciar < 0 || numeroPagos <= 0 || isNaN(tasaPeriodica)) {
+        document.getElementById('tabla-body').innerHTML = '';
+        return;
+    }
+
+    const forcedFormatter = new Intl.NumberFormat('en-US', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+    });
+
+    let cuotaBase = 0;
+    if (sistema === 'frances') {
+        cuotaBase = tasaPeriodica > 0 
+            ? (capitalAFinanciar * tasaPeriodica) / (1 - Math.pow(1 + tasaPeriodica, -numeroPagos))
+            : capitalAFinanciar / numeroPagos;
+    } else {
+        cuotaBase = (capitalAFinanciar / numeroPagos) + (capitalAFinanciar * tasaPeriodica);
+    }
+
+    const cuotaRedonda = Math.round(cuotaBase);
+    let saldo = capitalAFinanciar;
+    let totalInteres = 0;
+    let filasHtml = '';
+
+    for (let i = 1; i <= numeroPagos; i++) {
+        const interesPagar = (sistema === 'frances') ? saldo * tasaPeriodica : capitalAFinanciar * tasaPeriodica;
+        let capitalPagar = cuotaRedonda - interesPagar;
+        
+        if (i === numeroPagos) {
+            capitalPagar = saldo;
+        }
+
+        totalInteres += interesPagar;
+        saldo -= capitalPagar;
+
+        filasHtml += `
+            <tr class="hover:bg-blue-50 transition-colors">
+                <td class="px-4 py-3 font-semibold text-gray-400 text-center">${i}</td>
+                <td class="px-4 py-3 font-bold text-gray-700 text-right">${forcedFormatter.format(cuotaRedonda)}</td>
+                <td class="px-4 py-3 text-rose-500 font-medium text-right">${forcedFormatter.format(interesPagar)}</td>
+                <td class="px-4 py-3 text-emerald-600 font-medium text-right">${forcedFormatter.format(capitalPagar)}</td>
+                <td class="px-4 py-3 font-bold text-gray-600 text-right">${forcedFormatter.format(Math.max(0, saldo))}</td>
+            </tr>
+        `;
+    }
+
+    document.getElementById('tabla-body').innerHTML = filasHtml;
+    document.getElementById('res-cuota').innerText = forcedFormatter.format(cuotaRedonda);
+    document.getElementById('res-financiar').innerText = forcedFormatter.format(capitalAFinanciar);
+    document.getElementById('res-interes').innerText = forcedFormatter.format(totalInteres);
+}
+
+
+
+
+function copiarWhatsApp() {
+    // 1. Obtener el número desde el input de la vista
+    const inputTelef = document.getElementById('telefono_cliente');
+    
+    // Limpiamos el valor de cualquier carácter que no sea número (quita espacios, guiones, etc.)
+    let numero = inputTelef.value.toString().replace(/\D/g, ''); 
+
+
+    // 4. Obtener los datos actuales de los cálculos
+    const cuota = document.getElementById('res-cuota').innerText;
+    const financiado = document.getElementById('res-financiar').innerText;
+    const meses = document.getElementById('plazo').value;
+    const frecSelect = document.getElementById('frecuencia');
+    const frecTxt = frecSelect.options[frecSelect.selectedIndex].text;
+
+    // 5. Construir el cuerpo del mensaje
+    const texto = `📊 *COTIZACIÓN DE PRÉSTAMO*\n` +
+                `----------------------------\n` +
+                  `💰 *Monto a prestar:* ${financiado}\n` +
+                  `🗓 *Plazo:* ${meses} Meses\n` +
+                  `🔄 *Frecuencia:* ${frecTxt}\n` +
+                  `💵 *Cuota:* ${cuota}\n` +
+                `----------------------------\n` +
+                `_Generado desde el Sistema de Cotizaciones de CrediPay_`;
+
+    // 6. Construir el enlace final y abrir en pestaña nueva
+    // La estructura correcta es: wa.me/numero?text=mensaje_codificado
+    const urlFinal = `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
+    
+    window.open(urlFinal, '_blank');
+}
+
+
+
+        window.onload = calcular;
+    </script>
+</body>
+</html>
