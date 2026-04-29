@@ -44,27 +44,37 @@
             padding-bottom: 10px;
         }
         h1 { 
-            font-size: 16pt !important; 
+            font-size: 15pt !important; 
             margin: 0 !important; 
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        /* Resumen de totales compacto */
-        .grid-cols-1.md\:grid-cols-3 { 
-            display: flex !important; 
-            gap: 10px !important; 
-            margin-bottom: 15px !important;
-        }
-        .grid-cols-1.md\:grid-cols-3 > div { 
-            flex: 1; 
-            padding: 8px !important; 
-            border: 1px solid #ddd !important;
-            border-radius: 5px !important;
-        }
-        .grid-cols-1.md\:grid-cols-3 h3 { font-size: 14pt !important; margin: 0 !important; }
-        .grid-cols-1.md\:grid-cols-3 p { font-size: 8pt !important; margin: 0 !important; }
+      /* Resumen de totales compacto (ACTUALIZADO A 4 COLUMNAS) */
+.grid-cols-1.md\:grid-cols-4 { 
+    display: flex !important; 
+    gap: 8px !important; 
+    margin-bottom: 12px !important;
+}
 
+.grid-cols-1.md\:grid-cols-4 > div { 
+    flex: 1; 
+    padding: 6px !important; 
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    text-align: center;
+}
+
+.grid-cols-1.md\:grid-cols-4 h3 { 
+    font-size: 13pt !important; 
+    margin: 0 !important; 
+    line-height: 1.2;
+}
+
+.grid-cols-1.md\:grid-cols-4 p { 
+    font-size: 7pt !important; 
+    margin: 0 !important; 
+}
         /* Tabla profesional */
         .card { 
             box-shadow: none !important; 
@@ -104,7 +114,7 @@
     </div>
 
     <!-- BOTONES DE NAVEGACIÓN -->
-<!--    <div class="max-w-6xl mx-auto flex justify-end gap-3 mb-6 no-print">
+    <div class="max-w-6xl mx-auto flex justify-end gap-3 mb-6 no-print">
         <a href="{{ route('admin.prestamos.create') }}" id="btn-crear"
         class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all text-sm">
             <i class="bi bi-plus-circle me-2"></i> Crear Préstamo
@@ -113,7 +123,7 @@
         class="inline-flex items-center px-4 py-2 bg-[#0164fe] hover:bg-[#0152d1] text-white font-bold rounded-lg shadow-md transition-all text-sm">
             <i class="bi bi-arrow-left-circle me-2"></i> Volver al Sistema
         </a>
-    </div>  -->
+    </div>
 
     <div class="max-w-6xl mx-auto">
         <header class="mb-8 text-center">
@@ -132,7 +142,7 @@
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-600">Monto del Préstamo</label>
+                        <label class="block text-sm font-semibold text-gray-600">Monto del Producto</label>
                         <div class="relative mt-1">
                             <span class="absolute left-3 top-2 text-gray-400">$</span>
                             <input type="number" id="monto" class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="">
@@ -141,12 +151,18 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-600">Inicial Minimo ($)</label>
+                            <label class="block text-sm font-semibold text-gray-600">Inicial Minimo (30%)</label>
                             <input type="number" id="inicial" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none" value="0">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-600">Tasa Mensual (%)</label>
                             <input type="number" id="tasa" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none" value="10" step="0.01">
+                    </div>
+
+                        <!-- Este div ahora ocupará el ancho de los dos anteriores juntos -->
+                        <div class="col-span-2">
+                        <label class="block text-sm font-semibold text-gray-600 whitespace-nowrap">Accesorios y Gastos Adicionales</label>
+                        <input type="number" id="accesorios" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none" value="" step="0.01" placeholder="Accesorios y Gastos Adicionales">
                         </div>
                     </div>
 
@@ -182,7 +198,7 @@
             <div class="lg:col-span-2 space-y-6">
                 
                 <!-- RESUMEN RÁPIDO -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="card p-4 text-center border-t-4 border-blue-500">
                         <p class="text-gray-500 text-xs font-bold uppercase">Cuota Fija</p>
                         <h3 id="res-cuota" class="text-2xl font-bold text-blue-600">$0.00</h3>
@@ -195,6 +211,10 @@
                         <p class="text-gray-500 text-xs font-bold uppercase">Total Intereses</p>
                         <h3 id="res-interes" class="text-2xl font-bold text-rose-600">$0.00</h3>
                     </div>
+                    <div class="card p-4 text-center border-t-4 border-rose-500">
+                        <p class="text-gray-500 text-xs font-bold uppercase">Total a Pagar</p>
+                        <h3 id="res-total" class="text-2xl font-bold text-rose-600">$0.00</h3>
+                    </div>
                 </div>
 
                 <!-- TABLA -->
@@ -206,15 +226,15 @@
                                 <i class="bi bi-printer me-1"></i> Imprimir
                             </button>
                             <button onclick="copiarWhatsApp()" class="text-sm bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold transition">
-                                <i class="bi bi-whatsapp me-1"></i> Compartir
+                                <i class="bi bi-whatsapp me-1"></i> Whatsapp
                             </button>
                         </div>
 
                         <div class="mb-4">
-    <label class="block text-sm font-semibold text-gray-600">WhatsApp del Cliente</label>
+    <label class="block text-sm font-semibold text-center text-gray-600" >WhatsApp del Cliente</label>
     <div class="relative mt-1">
         <span class="absolute left-3 top-2 text-gray-400"><i class="bi bi-whatsapp"></i></span>
-        <input type="number" id="telefono_cliente" class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" placeholder="Ej: 8091234567">
+        <input type="number" id="telefono_cliente" class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none text-center" placeholder="Ej: 8091234567">
     </div>
     <div class="text-[10px] text-gray-500 mt-1">Incluya el código de área sin el signo +</div>
 </div>
@@ -222,14 +242,14 @@
                     </div>
                     <!-- Eliminado max-h para que crezca hacia abajo sin scroll -->
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
+                        <table class="w-full text-center text-sm">
                             <thead class="bg-gray-100 shadow-sm">
                                 <tr>
-                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase">#</th>
-                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase">Cuota</th>
-                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase">Interés</th>
-                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase">Capital</th>
-                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase">Balance</th>
+                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase text-center ">#</th>
+                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase text-center ">Cuota</th>
+                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase text-center ">Interés</th>
+                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase text-center ">Capital</th>
+                                    <th class="px-4 py-3 font-bold text-gray-600 uppercase text-center ">Balance</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-body" class="divide-y divide-gray-100">
@@ -251,7 +271,7 @@
 
 
 // Listado de todos los IDs de tus campos
-const camposEscucha = ['monto', 'inicial', 'tasa', 'plazo', 'frecuencia', 'sistema'];
+const camposEscucha = ['monto', 'inicial', 'tasa', 'plazo', 'frecuencia', 'accesorios', 'sistema'];
 
 camposEscucha.forEach(id => {
     const elemento = document.getElementById(id);
@@ -281,9 +301,9 @@ window.addEventListener('DOMContentLoaded', calcular);
 
 function calcular() {
     const montoTotal = Number(document.getElementById('monto').value) || 0;
-    const inicial = parseFloat(document.getElementById('inicial').value) || 0;
+    const inicial = Number(document.getElementById('inicial').value) || 0;
+    const accesorios = Number(document.getElementById('accesorios').value) || 0;
 
-    // --- NUEVA VALIDACIÓN ---
     if (inicial > montoTotal) {
         document.getElementById('tabla-body').innerHTML = `
             <tr>
@@ -294,30 +314,34 @@ function calcular() {
         document.getElementById('res-cuota').innerText = "0.00";
         document.getElementById('res-financiar').innerText = "0.00";
         document.getElementById('res-interes').innerText = "0.00";
-        return; // Detiene la ejecución aquí
+        document.getElementById('res-total').innerText = "0.00";
+        return;
     }
 
-    const tasaMensual = parseFloat(document.getElementById('tasa').value) / 100;
-    const mesesPlazo = parseFloat(document.getElementById('plazo').value) || 0;
-    const frecuenciaFactor = parseInt(document.getElementById('frecuencia').value); 
+    const tasaMensual = Number(document.getElementById('tasa').value) / 100;
+    const mesesPlazo = Number(document.getElementById('plazo').value) || 0;
+    const frecuenciaFactor = Number(document.getElementById('frecuencia').value); 
     const sistema = document.getElementById('sistema').value;
 
-    const capitalAFinanciar = montoTotal - inicial;
+    // 🔥 AQUÍ SE SUMAN LOS ACCESORIOS
+    const capitalAFinanciar = (montoTotal + accesorios) - inicial;
+
     const numeroPagos = mesesPlazo * frecuenciaFactor;
     const tasaPeriodica = tasaMensual / frecuenciaFactor;
 
-    // Validación extra para evitar errores matemáticos
-    if (capitalAFinanciar < 0 || numeroPagos <= 0 || isNaN(tasaPeriodica)) {
+    if (capitalAFinanciar <= 0 || numeroPagos <= 0 || isNaN(tasaPeriodica)) {
         document.getElementById('tabla-body').innerHTML = '';
         return;
     }
 
-    const forcedFormatter = new Intl.NumberFormat('en-US', { 
+    const f = new Intl.NumberFormat('en-US', { 
         minimumFractionDigits: 2, 
         maximumFractionDigits: 2 
     });
 
+    // 🔥 CÁLCULO BASE
     let cuotaBase = 0;
+
     if (sistema === 'frances') {
         cuotaBase = tasaPeriodica > 0 
             ? (capitalAFinanciar * tasaPeriodica) / (1 - Math.pow(1 + tasaPeriodica, -numeroPagos))
@@ -326,65 +350,92 @@ function calcular() {
         cuotaBase = (capitalAFinanciar / numeroPagos) + (capitalAFinanciar * tasaPeriodica);
     }
 
-    const cuotaRedonda = Math.round(cuotaBase);
+    // 🔥 CUOTA FIJA
+    const cuotaFija = Math.round(cuotaBase);
+
     let saldo = capitalAFinanciar;
     let totalInteres = 0;
+    let totalPagos = 0;
     let filasHtml = '';
 
     for (let i = 1; i <= numeroPagos; i++) {
-        const interesPagar = (sistema === 'frances') ? saldo * tasaPeriodica : capitalAFinanciar * tasaPeriodica;
-        let capitalPagar = cuotaRedonda - interesPagar;
-        
+
+        const interesPagar = (sistema === 'frances') 
+            ? saldo * tasaPeriodica 
+            : capitalAFinanciar * tasaPeriodica;
+
+        let capitalPagar = cuotaFija - interesPagar;
+
+        // 🔥 AJUSTE SOLO EN LA ÚLTIMA (SIN CAMBIAR CUOTA)
         if (i === numeroPagos) {
             capitalPagar = saldo;
+
+            // Ajuste interno para cuadrar totales sin cambiar cuota visual
+            const ajuste = (capitalPagar + interesPagar) - cuotaFija;
+            totalInteres += ajuste;
         }
 
-        totalInteres += interesPagar;
         saldo -= capitalPagar;
+        totalInteres += interesPagar;
+        totalPagos += cuotaFija;
 
         filasHtml += `
-            <tr class="hover:bg-blue-50 transition-colors">
-                <td class="px-4 py-3 font-semibold text-gray-400 text-center">${i}</td>
-                <td class="px-4 py-3 font-bold text-gray-700 text-right">${forcedFormatter.format(cuotaRedonda)}</td>
-                <td class="px-4 py-3 text-rose-500 font-medium text-right">${forcedFormatter.format(interesPagar)}</td>
-                <td class="px-4 py-3 text-emerald-600 font-medium text-right">${forcedFormatter.format(capitalPagar)}</td>
-                <td class="px-4 py-3 font-bold text-gray-600 text-right">${forcedFormatter.format(Math.max(0, saldo))}</td>
-            </tr>
+        <tr class="hover:bg-blue-50 transition-colors">
+            <td class="px-4 py-3 font-semibold text-gray-400 text-center">${i}</td>
+            <td class="px-4 py-3 font-bold text-gray-700 text-center">${f.format(cuotaFija)}</td>
+            <td class="px-4 py-3 text-rose-500 font-medium text-center">${f.format(interesPagar)}</td>
+            <td class="px-4 py-3 text-emerald-600 font-medium text-center">${f.format(capitalPagar)}</td>
+            <td class="px-4 py-3 font-bold text-gray-600 text-center">${f.format(Math.max(0, saldo))}</td>
+        </tr>
         `;
     }
 
+    // 🔥 TOTAL FINAL (CUOTAS + INICIAL)
+    const totalFinal = totalPagos + inicial;
+
     document.getElementById('tabla-body').innerHTML = filasHtml;
-    document.getElementById('res-cuota').innerText = forcedFormatter.format(cuotaRedonda);
-    document.getElementById('res-financiar').innerText = forcedFormatter.format(capitalAFinanciar);
-    document.getElementById('res-interes').innerText = forcedFormatter.format(totalInteres);
+    document.getElementById('res-cuota').innerText = f.format(cuotaFija);
+    document.getElementById('res-financiar').innerText = f.format(capitalAFinanciar);
+    document.getElementById('res-interes').innerText = f.format(totalInteres);
+    document.getElementById('res-total').innerText = f.format(totalFinal);
 }
 
 
 
 
 function copiarWhatsApp() {
-    // 1. Obtener el número desde el input
-    const inputTelef = document.getElementById('telefono_cliente');
-    const inicialValue = document.getElementById('inicial').value || '0.00';
-    
-    // Limpiamos el número: solo permitimos dígitos
-    let numero = inputTelef.value.toString().replace(/\D/g, ''); 
 
-    // 2. Obtener los datos actuales de los cálculos
-    const cuota = document.getElementById('res-cuota').innerText;
+    const inputTelef = document.getElementById('telefono_cliente');
+    let numero = (inputTelef.value || '').toString().replace(/\D/g, '');
+
+  
+
+    // 🔥 Forzar código país RD si falta
+    if (numero.length === 10) {
+        numero = '1' + numero;
+    }
+
+    const f = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 });
+
+    const inicial = f.format(Number(document.getElementById('inicial').value) || 0);
     const financiado = document.getElementById('res-financiar').innerText;
+    const accesorios = f.format(Number(document.getElementById('accesorios').value) || 0);
+    const cuota = document.getElementById('res-cuota').innerText;
+    const total = document.getElementById('res-total').innerText;
+
     const meses = document.getElementById('plazo').value;
     const frecSelect = document.getElementById('frecuencia');
     const frecTxt = frecSelect.options[frecSelect.selectedIndex].text;
 
-   // 4. Construir el cuerpo del mensaje con emojis altamente compatibles
-const texto = `*COTIZACIÓN DE PRÉSTAMO CREDIPAY*
+    const texto = `*COTIZACIÓN DE PRÉSTAMO CREDIPAY*
 ----------------------------------------
-* 💵*Inicial:* ${inicialValue}
-* 💰*Monto a Financiar:* ${financiado}
-* 📅*Plazo:* ${meses} Meses
-* 📊*Frecuencia:* ${frecTxt}
-* 🤝*Cuota Fija:* ${cuota}
+💵 Inicial: RD$${inicial}
+💰 Monto a Financiar: RD$${financiado}
+🧾 Accesorios: RD$${accesorios}
+📅 Plazo del Financiamiento: ${meses} Meses
+📊 Frecuencia de Pago: ${frecTxt}
+🤝 Cuota Fija: RD$${cuota}
+💸 Total a Pagar: RD$${total}
 ----------------------------------------
 
 *¡Continúe su proceso ahora!*
@@ -393,11 +444,27 @@ https://solicitud.prestamoscloud.com/solicitudes/i/credipay-
 
 Nuestros representantes le contactarán en un plazo de *24 a 72 horas*.`;
 
-    // 5. Construir el enlace final
-    // encodeURIComponent se encarga de que los emojis y saltos de línea no den error
-    const urlFinal = `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
-    
-    window.open(urlFinal, '_blank');
+    const mensaje = encodeURIComponent(texto);
+
+    // 🔥 Detectar dispositivo
+    const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (esMovil) {
+        // 📱 Abre app directa
+        const urlApp = `whatsapp://send?phone=${numero}&text=${mensaje}`;
+        const urlWeb = `https://wa.me/${numero}?text=${mensaje}`;
+
+        window.location.href = urlApp;
+
+        setTimeout(() => {
+            window.location.href = urlWeb;
+        }, 1200);
+
+    } else {
+        // 💻 PC → abre WhatsApp Web directo
+        const urlPC = `https://web.whatsapp.com/send?phone=${numero}&text=${mensaje}`;
+        window.open(urlPC, '_blank');
+    }
 }
 
 
