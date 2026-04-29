@@ -456,13 +456,14 @@ function copiarWhatsApp() {
 
   
 
-    // 🔥 Forzar código país RD si falta
+     // 🔥 Forzar código país RD si falta
     if (numero.length === 10) {
         numero = '1' + numero;
     }
 
     const f = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 });
 
+    const precioProducto = f.format(Number(document.getElementById('monto').value) || 0);
     const inicial = f.format(Number(document.getElementById('inicial').value) || 0);
     const financiado = document.getElementById('res-financiar').innerText;
     const accesorios = f.format(Number(document.getElementById('accesorios').value) || 0);
@@ -475,13 +476,14 @@ function copiarWhatsApp() {
 
     const texto = `*RESUMEN DEL FINANCIAMIENTO CREDIPAY*
 ----------------------------------------
-💵 Inicial: RD$${inicial}
-💰 Monto a Financiar: RD$${financiado}
-🧾 Accesorios: RD$${accesorios}
-📅 Plazo del Financiamiento: ${meses} Meses
-📊 Frecuencia de Pago: ${frecTxt}
-🤝 Cuota Fija: RD$${cuota}
-💸 Total a Pagar: RD$${total}
+💲 *Precio del Producto:* RD$${precioProducto}
+💵 *Inicial:* RD$${inicial}
+👜 *Accesorios:* RD$${accesorios}
+💰 *Monto a Financiar:* RD$${financiado}
+📆 *Plazo del Financiamiento:* ${meses} Meses
+💸 *Cuota Fija:* RD$${cuota}
+📊 *Frecuencia de Pago:* ${frecTxt}
+🤝 *Total a Pagar:* RD$${total}
 ----------------------------------------
 
 *¡Continúe su proceso ahora!*
