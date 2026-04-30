@@ -126,16 +126,17 @@
         </a>
     </div>
 -->
+
     <div class="max-w-6xl mx-auto">
         <header class="mb-8 text-center">
             <h1 class="text-3xl font-bold text-gray-800">Resumen del Financiamiento</h1>
             <p class="text-gray-500">Documento informativo de plan de pagos proyectado</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8"> 
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
 
-             <!-- FORMULARIO DE PARÁMETROS -->
+            <!-- FORMULARIO DE PARÁMETROS -->
             <div id="form-parametros" class="card p-6 h-fit no-print">
                 <h2 class="text-xl font-semibold mb-2 flex items-center justify-center text-gray-700">
                     <i class="bi bi-sliders2-vertical me-2 text-[#0164fe]"></i> Datos de la Solicitud
@@ -149,8 +150,29 @@
                         <label class="block text-sm font-semibold text-gray-600">Precio del Producto</label>
                         <div class="relative mt-1">
                             <span class="absolute left-3 top-2 text-gray-400">$</span>
-                            <input type="number" id="monto" class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value="">
+                            <input type="number" id="monto" class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" value=""  placeholder="Monto">
+                        
+                            <h2 class="text-xs font-semibold mb-6 flex items-center justify-center text-red-600">
+                            <i class="bi bi-sliders2-vertical me-2"></i>Celulares, Tablets y TV llevan licencia de RD$500.00</h2>
                         </div>
+
+<div class="flex items-center gap-2 mt-2">
+    <input type="checkbox" id="checkLicencia" class="w-4 h-4">
+    <label for="checkLicencia" class="text-sm text-gray-600">
+        Agregar Licencia (RD$500.00)
+    </label>
+</div>
+
+<div id="contenedorLicencia" class="mt-3 ">
+    <label class="block text-sm font-semibold text-gray-600">
+        Precio del Producto con Licencia
+    </label>
+    <input type="number" id="precioConLicencia"
+        class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none bg-gray-100"
+        readonly>
+        
+</div>
+
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
@@ -165,8 +187,8 @@
 
                         <!-- Este div ahora ocupará el ancho de los dos anteriores juntos -->
                         <div class="col-span-2">
-                        <label class="block text-sm font-semibold text-gray-600 whitespace-nowrap">Accesorios / Gastos Adicionales</label>
-                        <input type="number" id="accesorios" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none" value="" step="0.01" placeholder="Accesorios / Gastos Adicionales">
+                        <label class="block text-sm font-semibold text-gray-600 whitespace-nowrap">Accesorios</label>
+                        <input type="number" id="accesorios" class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none" value="" step="0.01" placeholder="Accesorios">
                         </div>
                     </div>
 
@@ -192,19 +214,17 @@
                         </select>
                     </div>
 
-                        <!--oculte el boton calcular
+                 <!--oculte el boton calcular
                  
                  <button onclick="calcular()" class="w-full bg-[#0164fe] hover:bg-[#0152d1] text-white font-bold py-3 rounded-lg transition shadow-lg">
                          <i class="bi bi-calculator me-2"></i> CALCULAR 
                     </button>
 
                     -->
-
-                    
                 </div>
             </div>
 
-                       <!-- RESULTADOS Y CRONOGRAMA -->
+            <!-- RESULTADOS Y CRONOGRAMA -->
             <div class="lg:col-span-2 space-y-6">
                 
                 <!-- RESUMEN RÁPIDO -->
@@ -259,7 +279,7 @@
     </div>
 
     <div class="text-[10px] text-gray-500 mt-1 text-center no-print">
-        Incluya el código de área sin el signo + y sin guiones
+        Incluya el código de área sin el signo +1 y sin guiones
     </div>
 
     
@@ -323,11 +343,11 @@ camposEscucha.forEach(id => {
     const elemento = document.getElementById(id);
     if (!elemento) return;
 
-    // Determinamos el evento: 'change' para los select y 'input' para los demás
     const tipoEvento = elemento.tagName === 'SELECT' ? 'change' : 'input';
 
     elemento.addEventListener(tipoEvento, function() {
-        // Lógica específica para el monto: autocalcular el 30% de inicial
+
+        // 🔥 Auto inicial 30%
         if (id === 'monto') {
             const monto = parseFloat(this.value) || 0;
             const inicialInput = document.getElementById('inicial');
@@ -335,28 +355,52 @@ camposEscucha.forEach(id => {
                 inicialInput.value = (monto * 0.30).toFixed(2);
             }
         }
-        
-        // Ejecutar el cálculo general automáticamente
-        calcular(); 
+
+        calcular();
     });
 });
+
+const checkLicencia = document.getElementById('checkLicencia');
+const contenedorLicencia = document.getElementById('contenedorLicencia');
+
+if (checkLicencia) {
+    checkLicencia.addEventListener('change', function () {
+
+        // Mostrar / ocultar campo
+        if (contenedorLicencia) {
+            contenedorLicencia.classList.toggle('hidden', !this.checked);
+        }
+
+        calcular();
+    });
+}
+
+
 
 // Ejecutar el cálculo una vez al cargar la página por si hay valores por defecto
 window.addEventListener('DOMContentLoaded', calcular);
 
 
 function calcular() {
-    const montoTotal = Number(document.getElementById('monto').value) || 0;
+
+    const montoBase = Number(document.getElementById('monto').value) || 0;
     const inicial = Number(document.getElementById('inicial').value) || 0;
     const accesorios = Number(document.getElementById('accesorios').value) || 0;
 
-    if (inicial > montoTotal) {
+    // 🔥 CHECK LICENCIA (500)
+    const licenciaExtra = document.getElementById('checkLicencia')?.checked ? 500 : 0;
+
+    // 🔥 PRECIO FINAL DEL PRODUCTO
+    const precioFinalProducto = montoBase + licenciaExtra;
+
+    if (inicial > montoBase) {
         document.getElementById('tabla-body').innerHTML = `
             <tr>
                 <td colspan="5" class="p-6 text-center text-rose-500 font-bold">
                     ⚠️ El pago inicial no puede ser mayor al monto del préstamo
                 </td>
             </tr>`;
+
         document.getElementById('res-cuota').innerText = "0.00";
         document.getElementById('res-financiar').innerText = "0.00";
         document.getElementById('res-interes').innerText = "0.00";
@@ -366,11 +410,11 @@ function calcular() {
 
     const tasaMensual = Number(document.getElementById('tasa').value) / 100;
     const mesesPlazo = Number(document.getElementById('plazo').value) || 0;
-    const frecuenciaFactor = Number(document.getElementById('frecuencia').value); 
+    const frecuenciaFactor = Number(document.getElementById('frecuencia').value);
     const sistema = document.getElementById('sistema').value;
 
-    // 🔥 AQUÍ SE SUMAN LOS ACCESORIOS
-    const capitalAFinanciar = (montoTotal + accesorios) - inicial;
+    // 🔥 CAPITAL REAL
+    const capitalAFinanciar = (precioFinalProducto + accesorios) - inicial;
 
     const numeroPagos = mesesPlazo * frecuenciaFactor;
     const tasaPeriodica = tasaMensual / frecuenciaFactor;
@@ -380,23 +424,21 @@ function calcular() {
         return;
     }
 
-    const f = new Intl.NumberFormat('en-US', { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
+    const f = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
     });
 
-    // 🔥 CÁLCULO BASE
     let cuotaBase = 0;
 
     if (sistema === 'frances') {
-        cuotaBase = tasaPeriodica > 0 
+        cuotaBase = tasaPeriodica > 0
             ? (capitalAFinanciar * tasaPeriodica) / (1 - Math.pow(1 + tasaPeriodica, -numeroPagos))
             : capitalAFinanciar / numeroPagos;
     } else {
         cuotaBase = (capitalAFinanciar / numeroPagos) + (capitalAFinanciar * tasaPeriodica);
     }
 
-    // 🔥 CUOTA FIJA
     const cuotaFija = Math.round(cuotaBase);
 
     let saldo = capitalAFinanciar;
@@ -406,17 +448,15 @@ function calcular() {
 
     for (let i = 1; i <= numeroPagos; i++) {
 
-        const interesPagar = (sistema === 'frances') 
-            ? saldo * tasaPeriodica 
+        const interesPagar = (sistema === 'frances')
+            ? saldo * tasaPeriodica
             : capitalAFinanciar * tasaPeriodica;
 
         let capitalPagar = cuotaFija - interesPagar;
 
-        // 🔥 AJUSTE SOLO EN LA ÚLTIMA (SIN CAMBIAR CUOTA)
         if (i === numeroPagos) {
             capitalPagar = saldo;
 
-            // Ajuste interno para cuadrar totales sin cambiar cuota visual
             const ajuste = (capitalPagar + interesPagar) - cuotaFija;
             totalInteres += ajuste;
         }
@@ -425,18 +465,31 @@ function calcular() {
         totalInteres += interesPagar;
         totalPagos += cuotaFija;
 
-        filasHtml += `
-        <tr class="hover:bg-blue-50 transition-colors">
-            <td class="px-4 py-3 font-semibold text-gray-400 text-center">${i}</td>
-            <td class="px-4 py-3 font-bold text-gray-700 text-center">${f.format(cuotaFija)}</td>
-            <td class="px-4 py-3 text-rose-500 font-medium text-center">${f.format(interesPagar)}</td>
-            <td class="px-4 py-3 text-emerald-600 font-medium text-center">${f.format(capitalPagar)}</td>
-            <td class="px-4 py-3 font-bold text-gray-600 text-center">${f.format(Math.max(0, saldo))}</td>
-        </tr>
-        `;
-    }
+filasHtml += `
+<tr class="hover:bg-blue-50 transition-colors text-xs md:text-sm">
+    <td class="px-3 md:px-4 py-2 md:py-3 font-semibold text-black-400 text-center">
+        ${i}
+    </td>
 
-    // 🔥 TOTAL FINAL (CUOTAS + INICIAL)
+    <td class="px-3 md:px-4 py-2 md:py-3 font-bold text-blue-600 text-center">
+        ${f.format(cuotaFija)}
+    </td>
+
+    <td class="px-3 md:px-4 py-2 md:py-3 text-rose-500 font-medium text-center">
+        ${f.format(interesPagar)}
+    </td>
+
+    <td class="px-3 md:px-4 py-2 md:py-3 text-emerald-600 font-medium text-center">
+        ${f.format(capitalPagar)}
+    </td>
+
+    <td class="px-3 md:px-4 py-2 md:py-3 font-bold text-gray-700 text-center">
+        ${f.format(Math.max(0, saldo))}
+    </td>
+</tr>
+`;
+}
+
     const totalFinal = totalPagos + inicial;
 
     document.getElementById('tabla-body').innerHTML = filasHtml;
@@ -444,6 +497,12 @@ function calcular() {
     document.getElementById('res-financiar').innerText = f.format(capitalAFinanciar);
     document.getElementById('res-interes').innerText = f.format(totalInteres);
     document.getElementById('res-total').innerText = f.format(totalFinal);
+
+    // 🔥 INPUT OPCIONAL
+    const inputLic = document.getElementById('precioConLicencia');
+    if (inputLic) {
+        inputLic.value = precioFinalProducto.toFixed(2);
+    }
 }
 
 
@@ -452,37 +511,49 @@ function calcular() {
 function copiarWhatsApp() {
 
     const inputTelef = document.getElementById('telefono_cliente');
-    let numero = (inputTelef.value || '').toString().replace(/\D/g, '');
+    let numero = (inputTelef.value || '').replace(/\D/g, '');
 
-  
-
-     // 🔥 Forzar código país RD si falta
     if (numero.length === 10) {
         numero = '1' + numero;
     }
 
     const f = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 });
 
-    const precioProducto = f.format(Number(document.getElementById('monto').value) || 0);
-    const inicial = f.format(Number(document.getElementById('inicial').value) || 0);
-    const financiado = document.getElementById('res-financiar').innerText;
-    const accesorios = f.format(Number(document.getElementById('accesorios').value) || 0);
-    const cuota = document.getElementById('res-cuota').innerText;
-    const total = document.getElementById('res-total').innerText;
+// 🔥 MISMA LÓGICA QUE CALCULAR
+const montoBase = Number(document.getElementById('monto').value) || 0;
+const licenciaActiva = document.getElementById('checkLicencia')?.checked;
+const licenciaExtra = licenciaActiva ? 500 : 0;
 
-    const meses = document.getElementById('plazo').value;
-    const frecSelect = document.getElementById('frecuencia');
-    const frecTxt = frecSelect.options[frecSelect.selectedIndex].text;
+const precioFinalProducto = montoBase + licenciaExtra;
 
-    const texto = `*RESUMEN DEL FINANCIAMIENTO CREDIPAY*
+// 🔥 CALCULAR TOTAL DE CUOTAS
+const meses = Number(document.getElementById('plazo').value) || 0;
+const frecuenciaFactor = Number(document.getElementById('frecuencia').value);
+
+const numeroCuotas = meses * frecuenciaFactor;
+
+// 🔥 TEXTOS
+const frecTxt = document.getElementById('frecuencia').selectedOptions[0].text;
+
+// 🔥 FORMATOS
+const precioProducto = f.format(precioFinalProducto);
+const inicial = f.format(Number(document.getElementById('inicial').value) || 0);
+const financiado = document.getElementById('res-financiar').innerText;
+const accesorios = f.format(Number(document.getElementById('accesorios').value) || 0);
+const cuota = document.getElementById('res-cuota').innerText;
+const total = document.getElementById('res-total').innerText;
+const textoCuotas = `${numeroCuotas} cuota${numeroCuotas > 1 ? 's' : ''} (${frecTxt})`;
+
+    // 🔥 TEXTO DINÁMICO PRO
+    const texto = `RESUMEN DEL FINANCIAMIENTO CREDIPAY
 ----------------------------------------
-💲 *Precio del Producto:* RD$${precioProducto}
+💲 *Precio del Producto:* RD$${precioProducto} ${licenciaActiva ? '' : ''}
 💵 *Inicial:* RD$${inicial}
 👜 *Accesorios:* RD$${accesorios}
 💰 *Monto a Financiar:* RD$${financiado}
 📆 *Plazo del Financiamiento:* ${meses} Meses
 💸 *Cuota Fija:* RD$${cuota}
-📊 *Frecuencia de Pago:* ${frecTxt}
+🧮 *Cantidad de Cuotas:* ${textoCuotas}
 🤝 *Total a Pagar:* RD$${total}
 ----------------------------------------
 
@@ -516,8 +587,10 @@ Nuestros representantes le contactarán en un plazo de *24 a 72 horas*.`;
 }
 
 
-
         window.onload = calcular;
     </script>
+
+
+
 </body>
 </html>
