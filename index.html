@@ -221,29 +221,63 @@
                 </div>
             </div>
 
-            <!-- RESULTADOS Y CRONOGRAMA -->
+         <!-- RESULTADOS Y CRONOGRAMA -->
             <div class="lg:col-span-2 space-y-6">
-                
+
+            
                 <!-- RESUMEN RÁPIDO -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="card p-4 text-center border-t-4 border-emerald-500">
-                        <p class="text-gray-500 text-xs font-bold uppercase">Monto Financiado</p>
-                        <h3 id="res-financiar" class="text-2xl font-bold text-emerald-600">$0.00</h3>
-                    </div>
-                    
-                    <div class="card p-4 text-center border-t-4 border-blue-500">
-                        <p class="text-gray-500 text-xs font-bold uppercase">Cuota Fija</p>
-                        <h3 id="res-cuota" class="text-2xl font-bold text-blue-600">$0.00</h3>
-                    </div>
-                    <div class="card p-4 text-center border-t-4 border-rose-500">
-                        <p class="text-gray-500 text-xs font-bold uppercase">Total Intereses</p>
-                        <h3 id="res-interes" class="text-2xl font-bold text-rose-600">$0.00</h3>
-                    </div>
-                    <div class="card p-4 text-center border-t-4 border-purple-500">
-                        <p class="text-gray-500 text-xs font-bold uppercase">Total a Pagar</p>
-                        <h3 id="res-total" class="text-2xl font-bold text-purple-600">$0.00</h3>
-                    </div>
-                </div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+
+    <!-- Precio Producto -->
+    <div class="card p-4 text-center border-t-4 border-emerald-500 bg-emerald-50">
+        <p class="text-emerald-700 text-xs font-bold uppercase">Precio del Producto</p>
+        <h3 id="res-producto" class="text-2xl font-bold text-emerald-700">RD$0.00</h3>
+    </div>
+    
+    <!-- Inicial -->
+    <div class="card p-4 text-center border-t-4 border-blue-500 bg-blue-50">
+        <p class="text-blue-700 text-xs font-bold uppercase">Inicial</p>
+        <h3 id="res-inicial" class="text-2xl font-bold text-blue-700">RD$0.00</h3>
+    </div>
+
+    <!-- Accesorios -->
+    <div class="card p-4 text-center border-t-4 border-rose-500 bg-rose-50">
+        <p class="text-rose-700 text-xs font-bold uppercase">Accesorios</p>
+        <h3 id="res-accesorios" class="text-2xl font-bold text-rose-700">RD$0.00</h3>
+    </div>
+
+    <!-- Monto financiado -->
+    <div class="card p-4 text-center border-t-4 border-purple-500 bg-purple-50">
+        <p class="text-purple-700 text-xs font-bold uppercase">Monto Financiado</p>
+        <h3 id="res-financiar" class="text-2xl font-bold text-purple-700">RD$0.00</h3>
+    </div>
+
+    <!-- Cuota -->
+    <div class="card p-4 text-center border-t-4 border-orange-500 bg-orange-50">
+        <p class="text-orange-700 text-xs font-bold uppercase">Cuota Fija</p>
+        <h3 id="res-cuota" class="text-2xl font-bold text-orange-700">RD$0.00</h3>
+    </div>
+
+    <!-- Cantidad cuotas -->
+    <div class="card p-4 text-center border-t-4 border-amber-800 bg-amber-50">
+        <p class="text-amber-900 text-xs font-bold uppercase">Cantidad de Cuotas</p>
+        <h3 id="res-cuotas" class="text-2xl font-bold text-amber-900">0</h3>
+    </div>
+
+    <!-- Intereses -->
+    <div class="card p-4 text-center border-t-4 border-yellow-400 bg-yellow-50">
+        <p class="text-yellow-700 text-xs font-bold uppercase">Total Intereses</p>
+        <h3 id="res-interes" class="text-2xl font-bold text-yellow-700">RD$0.00</h3>
+    </div>
+
+    <!-- Total -->
+    <div class="card p-4 text-center border-t-4 border-gray-500 bg-gray-100">
+        <p class="text-gray-700 text-xs font-bold uppercase">Total a Pagar</p>
+        <h3 id="res-total" class="text-2xl font-bold text-gray-800">RD$0.00</h3>
+    </div>
+
+</div>
+
 
                 <!-- TABLA -->
                 <div class="card overflow-hidden">
@@ -375,8 +409,50 @@ if (checkLicencia) {
 
 
 // Ejecutar el cálculo una vez al cargar la página por si hay valores por defecto
-window.addEventListener('DOMContentLoaded', calcular);
+window.addEventListener('DOMContentLoaded', () => {
+    calcular();
 
+    const inputMonto = document.getElementById('monto');
+    if (inputMonto) {
+        inputMonto.focus();
+        inputMonto.select();
+    }
+
+});
+
+const ordenInputs = [
+    'monto',
+    'inicial',
+    'tasa',
+    'accesorios',
+    'plazo',
+    'frecuencia',
+    'telefono_cliente',
+];
+
+ordenInputs.forEach((id, index) => {
+    const campo = document.getElementById(id);
+    if (!campo) return;
+
+    campo.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            const siguienteId = ordenInputs[index + 1];
+            if (siguienteId) {
+                const siguiente = document.getElementById(siguienteId);
+                if (siguiente) {
+                    siguiente.focus();
+
+                    // 🔥 si es input, selecciona texto
+                    if (siguiente.select) {
+                        siguiente.select();
+                    }
+                }
+            }
+        }
+    });
+});
 
 function calcular() {
 
@@ -462,6 +538,8 @@ function calcular() {
         totalInteres += interesPagar;
         totalPagos += cuotaFija;
 
+
+// tabla de calculo
 filasHtml += `
 <tr class="hover:bg-blue-50 transition-colors text-xs md:text-sm">
     <td class="px-3 md:px-4 py-2 md:py-3 font-semibold text-black-400 text-center">
@@ -494,6 +572,12 @@ filasHtml += `
     document.getElementById('res-financiar').innerText = f.format(capitalAFinanciar);
     document.getElementById('res-interes').innerText = f.format(totalInteres);
     document.getElementById('res-total').innerText = f.format(totalFinal);
+
+    document.getElementById('res-producto').innerText = f.format(precioFinalProducto);
+    document.getElementById('res-inicial').innerText = f.format(inicial);
+    document.getElementById('res-accesorios').innerText = f.format(accesorios);
+    document.getElementById('res-cuotas').innerText = numeroPagos;
+
 
     // 🔥 INPUT OPCIONAL
     const inputLic = document.getElementById('precioConLicencia');
