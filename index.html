@@ -541,6 +541,11 @@ function calcular() {
 
     const numeroPagos = mesesPlazo * frecuenciaFactor;
     const tasaPeriodica = tasaMensual / frecuenciaFactor;
+    const frecTxt = document.getElementById('frecuencia').selectedOptions[0].text;
+
+// 🔥 TEXTO FINAL DE CUOTAS
+const textoCuotas = `${numeroPagos} (${frecTxt})`;
+
 
     if (capitalAFinanciar <= 0 || numeroPagos <= 0 || isNaN(tasaPeriodica)) {
         document.getElementById('tabla-body').innerHTML = '';
@@ -626,7 +631,7 @@ filasHtml += `
     document.getElementById('res-producto').innerText = f.format(precioFinalProducto);
     document.getElementById('res-inicial').innerText = f.format(inicial);
     document.getElementById('res-accesorios').innerText = f.format(accesorios);
-    document.getElementById('res-cuotas').innerText = numeroPagos;
+    document.getElementById('res-cuotas').innerText = textoCuotas;
 
 
     // 🔥 INPUT OPCIONAL
