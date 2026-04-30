@@ -11,95 +11,122 @@
     body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
     .card { background: white; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
     
-    /* Estilos para impresión OPTIMIZADOS */
-    @media print {
-        /* Ocultar elementos innecesarios */
-        .no-print, #btn-volver, #btn-crear, #form-parametros, header p, .bi {
-            display: none !important;
-        }
+   /* 🔥 IMPRESIÓN PROFESIONAL AJUSTADA */
+@media print {
 
-        /* Configuración de página */
-        @page {
-            margin: 1cm;
-            size: portrait;
-        }
-
-        body { 
-            background-color: white !important; 
-            padding: 0 !important; 
-            margin: 0 !important;
-            color: black;
-        }
-
-        /* Ajuste de contenedores */
-        .max-w-6xl { max-width: 100% !important; width: 100% !important; margin: 0 !important; }
-        .grid { display: block !important; } /* Elimina el grid para que la tabla use todo el ancho */
-        .lg\:col-span-2 { width: 100% !important; }
-        
-        /* Encabezado compacto */
-        header { 
-            margin-bottom: 15px !important; 
-            text-align: center;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-        }
-        h1 { 
-            font-size: 15pt !important; 
-            margin: 0 !important; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-      /* Resumen de totales compacto (ACTUALIZADO A 4 COLUMNAS) */
-.grid-cols-1.md\:grid-cols-4 { 
-    display: flex !important; 
-    gap: 8px !important; 
-    margin-bottom: 12px !important;
-}
-
-.grid-cols-1.md\:grid-cols-4 > div { 
-    flex: 1; 
-    padding: 6px !important; 
-    border: 1px solid #ddd !important;
-    border-radius: 4px !important;
-    text-align: center;
-}
-
-.grid-cols-1.md\:grid-cols-4 h3 { 
-    font-size: 13pt !important; 
-    margin: 0 !important; 
-    line-height: 1.2;
-}
-
-.grid-cols-1.md\:grid-cols-4 p { 
-    font-size: 7pt !important; 
-    margin: 0 !important; 
-}
-        /* Tabla profesional */
-        .card { 
-            box-shadow: none !important; 
-            border: none !important; 
-        }
-        table { 
-            width: 100% !important; 
-            border-collapse: collapse !important;
-            font-size: 9pt !important; 
-        }
-        th { 
-            background-color: #f8f9fa !important; 
-            color: black !important; 
-            border: 1px solid #ddd !important;
-            padding: 6px !important;
-            text-transform: uppercase;
-        }
-        td { 
-            border: 1px solid #eee !important; 
-            padding: 5px !important;
-        }
-        
-        /* Evitar que las filas se corten entre páginas */
-        tr { page-break-inside: avoid; }
+    /* ❌ Ocultar elementos innecesarios */
+    .no-print, 
+    #btn-volver, 
+    #btn-crear, 
+    #form-parametros, 
+    header p, 
+    .bi {
+        display: none !important;
     }
+
+    /* 📄 Configuración */
+    @page {
+        margin: 0.8cm;
+        size: portrait;
+    }
+
+    body { 
+        background: #fff !important; 
+        margin: 0 !important;
+        padding: 0 !important;
+        color: #000;
+        font-size: 10pt;
+    }
+
+    /* 📦 Contenedor */
+    .max-w-6xl { 
+        max-width: 100% !important; 
+        margin: 0 !important; 
+    }
+
+    /* 🧾 HEADER COMPACTO */
+    header { 
+        margin-bottom: 8px !important; 
+        text-align: center;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+    }
+
+    h1 { 
+        font-size: 13pt !important; 
+        margin: 0 !important; 
+        text-transform: uppercase;
+    }
+
+    /* 🔥 DASHBOARD DE 8 BLOQUES (2 FILAS DE 4) */
+    .grid-cols-2.md\:grid-cols-4,
+    .grid-cols-1.md\:grid-cols-4 {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .grid-cols-2.md\:grid-cols-4 > div,
+    .grid-cols-1.md\:grid-cols-4 > div {
+        width: 24% !important; /* 4 columnas */
+        padding: 6px !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        text-align: center;
+        background: #fff !important;
+    }
+
+    /* textos dentro de cards */
+    .grid-cols-2.md\:grid-cols-4 p,
+    .grid-cols-1.md\:grid-cols-4 p {
+        font-size: 7pt !important;
+        margin: 0 !important;
+        color: #444 !important;
+    }
+
+    .grid-cols-2.md\:grid-cols-4 h3,
+    .grid-cols-1.md\:grid-cols-4 h3 {
+        font-size: 11pt !important;
+        margin: 0 !important;
+        font-weight: bold;
+        color: #000 !important;
+    }
+
+    /* 📊 TABLA */
+    .card { 
+        box-shadow: none !important; 
+        border: none !important; 
+    }
+
+    table { 
+        width: 100% !important; 
+        border-collapse: collapse !important;
+        font-size: 8pt !important; 
+    }
+
+    th { 
+        background: #eee !important; 
+        border: 1px solid #ccc !important;
+        padding: 4px !important;
+        text-transform: uppercase;
+    }
+
+    td { 
+        border: 1px solid #ddd !important; 
+        padding: 4px !important;
+    }
+
+    /* 🔥 evitar cortes feos */
+    tr { 
+        page-break-inside: avoid; 
+    }
+
+    /* 🔥 compactar filas */
+    tbody tr td {
+        line-height: 1.2;
+    }
+}
 </style>
 
 </head>
@@ -114,8 +141,7 @@
     </div>
 
     <!-- BOTONES DE NAVEGACIÓN -->
-    
-<!--    <div class="max-w-6xl mx-auto flex justify-end gap-3 mb-6 no-print">
+    <div class="max-w-6xl mx-auto flex justify-end gap-3 mb-6 no-print">
         <a href="{{ route('admin.prestamos.create') }}" id="btn-crear"
         class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition-all text-sm">
             <i class="bi bi-plus-circle me-2"></i> Crear Préstamo
@@ -125,7 +151,6 @@
             <i class="bi bi-arrow-left-circle me-2"></i> Volver al Sistema
         </a>
     </div>
--->
 
     <div class="max-w-6xl mx-auto">
         <header class="mb-8 text-center">
@@ -144,8 +169,19 @@
                 <h2 class="text-xs font-semibold mb-6 flex items-center justify-center text-red-600 no-print">
                 <i class="bi bi-sliders2-vertical me-2"></i>Presiona Tecla F5 para Limpiar los Resultados</h2>
 
-                
-                <div class="space-y-4">
+<div class="space-y-4">
+    <div>
+        <label class="block text-sm font-semibold text-gray-600">Nombre del Producto</label>
+        <div class="relative mt-1">
+            <input 
+                type="text" 
+                id="nombre_producto"
+                class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Ej: iPhone 17 Pro Max">
+        </div>
+</div>
+
+
                     <div>
                         <label class="block text-sm font-semibold text-gray-600">Precio del Producto</label>
                         <div class="relative mt-1">
@@ -168,6 +204,7 @@
     <input type="number" id="precioConLicencia"
         class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg outline-none bg-gray-100"
         readonly>
+        
 </div>
 
                     </div>
@@ -211,17 +248,17 @@
                         </select>
                     </div>
 
-                 <!--oculte el boton calcular
-                 
-                 <button onclick="calcular()" class="w-full bg-[#0164fe] hover:bg-[#0152d1] text-white font-bold py-3 rounded-lg transition shadow-lg">
-                         <i class="bi bi-calculator me-2"></i> CALCULAR 
+                <!--oculte el boton calcular
+                
+                <button onclick="calcular()" class="w-full bg-[#0164fe] hover:bg-[#0152d1] text-white font-bold py-3 rounded-lg transition shadow-lg">
+                <i class="bi bi-calculator me-2"></i> CALCULAR 
                     </button>
 
                     -->
                 </div>
             </div>
 
-         <!-- RESULTADOS Y CRONOGRAMA -->
+            <!-- RESULTADOS Y CRONOGRAMA -->
             <div class="lg:col-span-2 space-y-6">
 
             
@@ -368,7 +405,7 @@
 
 
 // Listado de todos los IDs de tus campos
-const camposEscucha = ['monto', 'inicial', 'tasa', 'plazo', 'frecuencia', 'accesorios', 'sistema'];
+const camposEscucha = ['nombre_producto','monto', 'inicial', 'tasa', 'plazo', 'frecuencia', 'accesorios', 'sistema'];
 
 camposEscucha.forEach(id => {
     const elemento = document.getElementById(id);
@@ -412,15 +449,15 @@ if (checkLicencia) {
 window.addEventListener('DOMContentLoaded', () => {
     calcular();
 
-    const inputMonto = document.getElementById('monto');
+    const inputMonto = document.getElementById('nombre_producto');
     if (inputMonto) {
         inputMonto.focus();
         inputMonto.select();
     }
 
 });
-
 const ordenInputs = [
+    'nombre_producto',
     'monto',
     'inicial',
     'tasa',
@@ -435,22 +472,33 @@ ordenInputs.forEach((id, index) => {
     if (!campo) return;
 
     campo.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
 
-            const siguienteId = ordenInputs[index + 1];
-            if (siguienteId) {
-                const siguiente = document.getElementById(siguienteId);
-                if (siguiente) {
-                    siguiente.focus();
+        // 🔥 SOLO ENTER (evita interferir con otros eventos)
+        if (e.key !== 'Enter') return;
 
-                    // 🔥 si es input, selecciona texto
-                    if (siguiente.select) {
-                        siguiente.select();
-                    }
+        e.preventDefault();
+
+        const siguienteId = ordenInputs[index + 1];
+
+        // 👉 SI HAY SIGUIENTE → enfocar
+        if (siguienteId) {
+            const siguiente = document.getElementById(siguienteId);
+
+            if (siguiente) {
+                siguiente.focus();
+
+                // 🔥 seleccionar contenido si aplica
+                if (typeof siguiente.select === 'function') {
+                    siguiente.select();
                 }
             }
+        } 
+        // 👉 SI ES EL ÚLTIMO → acción final
+        else {
+            // 🔥 aquí puedes decidir qué hacer
+            copiarWhatsApp(); // 👉 abre WhatsApp directo
         }
+
     });
 });
 
@@ -624,10 +672,12 @@ const accesorios = f.format(Number(document.getElementById('accesorios').value) 
 const cuota = document.getElementById('res-cuota').innerText;
 const total = document.getElementById('res-total').innerText;
 const textoCuotas = `${numeroCuotas} cuota${numeroCuotas > 1 ? 's' : ''} (${frecTxt})`;
+const nombreProducto = document.getElementById('nombre_producto')?.value || 'Producto';
 
     // 🔥 TEXTO DINÁMICO PRO
     const texto = `RESUMEN DEL FINANCIAMIENTO CREDIPAY
 ----------------------------------------
+📱 *Producto:* ${nombreProducto.toUpperCase()}
 💲 *Precio del Producto:* RD$${precioProducto} ${licenciaActiva ? '' : ''}
 💵 *Inicial:* RD$${inicial}
 👜 *Accesorios:* RD$${accesorios}
