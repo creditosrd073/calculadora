@@ -150,12 +150,10 @@
     <div>
         <label class="block text-sm font-semibold text-gray-600">Nombre del Producto</label>
         <div class="relative mt-1">
-            <input 
-                type="text" 
-                id="nombre_producto"
-                class="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="Ej: iPhone 17 Pro Max">
-        </div>
+        <input list="lista-productos" id="nombre_producto"
+        class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Buscar producto...">
+        <datalist id="lista-productos"></datalist>
+    </div>
 </div>
 
 
@@ -382,102 +380,313 @@
 
 
 // Listado de todos los IDs de tus campos
-const camposEscucha = ['nombre_producto','monto', 'inicial', 'tasa', 'plazo', 'frecuencia', 'accesorios', 'sistema'];
 
-camposEscucha.forEach(id => {
-    const elemento = document.getElementById(id);
-    if (!elemento) return;
+document.addEventListener('DOMContentLoaded', function () {
 
-    const tipoEvento = elemento.tagName === 'SELECT' ? 'change' : 'input';
+    cargarProductos();
+    activarAutocompletar();
+    inicializarEventos();
+    inicializarEnter();
 
-    elemento.addEventListener(tipoEvento, function() {
+    // 🔥 foco inicial
+    const input = document.getElementById('nombre_producto');
+    if (input) {
+        input.focus();
+        input.select();
+    }
 
-        // 🔥 Auto inicial 30%
-        if (id === 'monto') {
-            const monto = parseFloat(this.value) || 0;
-            const inicialInput = document.getElementById('inicial');
-            if (inicialInput) {
-                inicialInput.value = (monto * 0.30).toFixed(2);
-            }
-        }
-
-        calcular();
-    });
+    calcular();
 });
 
-const checkLicencia = document.getElementById('checkLicencia');
-const contenedorLicencia = document.getElementById('contenedorLicencia');
 
-if (checkLicencia) {
-    checkLicencia.addEventListener('change', function () {
+// ===============================
+// 🔥 ACTUALIZAR INICIAL 30%
+// ===============================
+function actualizarInicial() {
+    const monto = parseFloat(document.getElementById('monto').value) || 0;
+    const inicialInput = document.getElementById('inicial');
 
-        // Mostrar / ocultar campo
-        if (contenedorLicencia) {
-            contenedorLicencia.classList.toggle('hidden', !this.checked);
+    if (inicialInput) {
+        inicialInput.value = (monto * 0.30).toFixed(2);
+    }
+}
+
+
+// ===============================
+// 🔥 EVENTOS GENERALES
+// ===============================
+function inicializarEventos() {
+
+    const campos = ['monto','inicial','tasa','plazo','frecuencia','accesorios','sistema'];
+
+    campos.forEach(id => {
+
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const evento = el.tagName === 'SELECT' ? 'change' : 'input';
+
+        el.addEventListener(evento, function () {
+
+            if (id === 'monto') {
+                actualizarInicial();
+            }
+
+            calcular();
+        });
+    });
+
+    // 🔥 licencia
+    const check = document.getElementById('checkLicencia');
+    const contenedor = document.getElementById('contenedorLicencia');
+
+    if (check) {
+        check.addEventListener('change', function () {
+
+            if (contenedor) {
+                contenedor.classList.toggle('hidden', !this.checked);
+            }
+
+            calcular();
+        });
+    }
+}
+
+
+// ===============================
+// 🔥 CARGAR PRODUCTOS DESDE CSV
+// ===============================
+function cargarProductos() {
+
+    fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSWaRFQ7at60liEuEBqUPbHstZ3xyoygWpzJ1-V_XG4loTeDGztXJtfx-TiMZdUyrg7wSFsoimiiZQb/pub?output=csv')
+        .then(res => res.text())
+        .then(data => {
+
+            const datalist = document.getElementById('lista-productos');
+            datalist.innerHTML = ''; // 🔥 evitar duplicados
+
+            const lineas = data.split('\n');
+            lineas.shift();
+
+            const usados = new Set();
+
+            lineas.forEach(fila => {
+
+                const [nombre, precio] = fila.split(',');
+
+                if (nombre && precio) {
+
+                    const key = nombre.trim();
+
+                    if (usados.has(key)) return;
+                    usados.add(key);
+
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.dataset.precio = precio.trim();
+
+                    datalist.appendChild(option);
+                }
+            });
+        });
+}
+
+
+// ===============================
+// 🔥 AUTOCOMPLETE REAL (NO BLOQUEA ESCRITURA)
+// ===============================
+function activarAutocompletar() {
+
+    const input = document.getElementById('nombre_producto');
+    if (!input) return;
+
+    // 🔥 seleccionar producto SOLO cuando termina
+    input.addEventListener('change', seleccionarProducto);
+    input.addEventListener('blur', seleccionarProducto);
+
+    input.addEventListener('keydown', function (e) {
+
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            seleccionarProducto();
+
+            // pasar al siguiente campo
+            const siguiente = document.getElementById('monto');
+            if (siguiente) {
+                siguiente.focus();
+                siguiente.select();
+            }
         }
-
-        calcular();
     });
 }
 
 
+// ===============================
+// 🔥 SELECCIONAR PRODUCTO
+// ===============================
+function seleccionarProducto() {
 
-// Ejecutar el cálculo una vez al cargar la página por si hay valores por defecto
-window.addEventListener('DOMContentLoaded', () => {
-    calcular();
+    const input = document.getElementById('nombre_producto');
+    const valor = input.value.toLowerCase();
 
-    const inputMonto = document.getElementById('nombre_producto');
-    if (inputMonto) {
-        inputMonto.focus();
-        inputMonto.select();
+    const opciones = document.querySelectorAll('#lista-productos option');
+
+    for (let op of opciones) {
+
+        if (op.value.toLowerCase() === valor) {
+
+            const monto = document.getElementById('monto');
+            monto.value = op.dataset.precio;
+
+            actualizarInicial(); // 🔥 CLAVE
+            calcular();
+
+            return;
+        }
+    }
+}
+
+
+// ===============================
+// 🔥 NAVEGACIÓN CON ENTER
+// ===============================
+function inicializarEnter() {
+
+    const orden = [
+        'nombre_producto',
+        'monto',
+        'inicial',
+        'tasa',
+        'accesorios',
+        'plazo',
+        'frecuencia',
+        'telefono_cliente'
+    ];
+
+    orden.forEach((id, index) => {
+
+        const campo = document.getElementById(id);
+        if (!campo) return;
+
+        campo.addEventListener('keydown', function (e) {
+
+            if (e.key !== 'Enter') return;
+
+            e.preventDefault();
+
+            const siguienteId = orden[index + 1];
+
+            if (siguienteId) {
+                const siguiente = document.getElementById(siguienteId);
+
+                if (siguiente) {
+                    siguiente.focus();
+
+                    if (typeof siguiente.select === 'function') {
+                        siguiente.select();
+                    }
+                }
+            } else {
+                copiarWhatsApp();
+            }
+        });
+    });
+}
+
+
+// ===============================
+// 🔥 CALCULAR
+// ===============================
+function calcular() {
+
+    const montoBase = Number(document.getElementById('monto').value) || 0;
+    const inicial = Number(document.getElementById('inicial').value) || 0;
+    const accesorios = Number(document.getElementById('accesorios').value) || 0;
+
+    const licenciaExtra = document.getElementById('checkLicencia')?.checked ? 500 : 0;
+    const precioFinalProducto = montoBase + licenciaExtra;
+
+    if (inicial > montoBase) {
+        document.getElementById('tabla-body').innerHTML = `
+            <tr>
+                <td colspan="5" class="p-6 text-center text-rose-500 font-bold">
+                    ⚠️ El pago inicial no puede ser mayor al monto del préstamo
+                </td>
+            </tr>`;
+        return;
     }
 
-});
-const ordenInputs = [
-    'nombre_producto',
-    'monto',
-    'inicial',
-    'tasa',
-    'accesorios',
-    'plazo',
-    'frecuencia',
-    'telefono_cliente',
-];
+    const tasaMensual = Number(document.getElementById('tasa').value) / 100;
+    const mesesPlazo = Number(document.getElementById('plazo').value) || 0;
+    const frecuenciaFactor = Number(document.getElementById('frecuencia').value);
+    const sistema = document.getElementById('sistema').value;
 
-ordenInputs.forEach((id, index) => {
-    const campo = document.getElementById(id);
-    if (!campo) return;
+    const capitalAFinanciar = (precioFinalProducto + accesorios) - inicial;
 
-    campo.addEventListener('keydown', function(e) {
+    const numeroPagos = mesesPlazo * frecuenciaFactor;
+    const tasaPeriodica = tasaMensual / frecuenciaFactor;
 
-        // 🔥 SOLO ENTER (evita interferir con otros eventos)
-        if (e.key !== 'Enter') return;
+    const frecTxt = document.getElementById('frecuencia').selectedOptions[0].text;
+    const textoCuotas = `${numeroPagos} (${frecTxt})`;
 
-        e.preventDefault();
+    if (capitalAFinanciar <= 0 || numeroPagos <= 0) return;
 
-        const siguienteId = ordenInputs[index + 1];
+    const f = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 
-        // 👉 SI HAY SIGUIENTE → enfocar
-        if (siguienteId) {
-            const siguiente = document.getElementById(siguienteId);
+    let cuotaBase = sistema === 'frances'
+        ? (capitalAFinanciar * tasaPeriodica) / (1 - Math.pow(1 + tasaPeriodica, -numeroPagos))
+        : (capitalAFinanciar / numeroPagos) + (capitalAFinanciar * tasaPeriodica);
 
-            if (siguiente) {
-                siguiente.focus();
+    const cuotaFija = Math.round(cuotaBase);
 
-                // 🔥 seleccionar contenido si aplica
-                if (typeof siguiente.select === 'function') {
-                    siguiente.select();
-                }
-            }
-        } 
-        // 👉 SI ES EL ÚLTIMO → acción final
-        else {
-            // 🔥 aquí puedes decidir qué hacer
-            copiarWhatsApp(); // 👉 abre WhatsApp directo
+    let saldo = capitalAFinanciar;
+    let totalInteres = 0;
+    let totalPagos = 0;
+    let filasHtml = '';
+
+    for (let i = 1; i <= numeroPagos; i++) {
+
+        const interesPagar = sistema === 'frances'
+            ? saldo * tasaPeriodica
+            : capitalAFinanciar * tasaPeriodica;
+
+        let capitalPagar = cuotaFija - interesPagar;
+
+        if (i === numeroPagos) {
+            capitalPagar = saldo;
         }
 
-    });
-});
+        saldo -= capitalPagar;
+        totalInteres += interesPagar;
+        totalPagos += cuotaFija;
+
+        filasHtml += `
+        <tr class="text-center text-sm">
+            <td>${i}</td>
+            <td>${f.format(cuotaFija)}</td>
+            <td>${f.format(interesPagar)}</td>
+            <td>${f.format(capitalPagar)}</td>
+            <td>${f.format(Math.max(0, saldo))}</td>
+        </tr>`;
+    }
+
+    const totalFinal = totalPagos + inicial;
+
+    document.getElementById('tabla-body').innerHTML = filasHtml;
+
+    document.getElementById('res-cuota').innerText = f.format(cuotaFija);
+    document.getElementById('res-financiar').innerText = f.format(capitalAFinanciar);
+    document.getElementById('res-interes').innerText = f.format(totalInteres);
+    document.getElementById('res-total').innerText = f.format(totalFinal);
+
+    document.getElementById('res-producto').innerText = f.format(precioFinalProducto);
+    document.getElementById('res-inicial').innerText = f.format(inicial);
+    document.getElementById('res-accesorios').innerText = f.format(accesorios);
+    document.getElementById('res-cuotas').innerText = textoCuotas;
+}
 
 function calcular() {
 
@@ -615,6 +824,7 @@ filasHtml += `
         inputLic.value = precioFinalProducto.toFixed(2);
     }
 }
+
 
 
 
