@@ -293,6 +293,26 @@
 
 </div>
 
+<div class="mt-4 rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+    <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm md:text-base font-semibold text-gray-700">
+            Vista previa del mensaje
+        </h3>
+
+        <button
+            type="button"
+            id="copiar-preview"
+            class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition">
+            Copiar
+        </button>
+    </div>
+
+    <textarea
+        id="preview-whatsapp"
+        readonly
+        class="w-full min-h-[220px] rounded-lg border border-gray-300 bg-gray-50 p-3 text-sm text-gray-700 leading-6 outline-none resize-y"></textarea>
+</div>
+
 
                 <!-- TABLA -->
                 <div class="card overflow-hidden">
@@ -391,12 +411,7 @@ document.addEventListener('DOMContentLoaded', function () {
     inicializarEventos();
     inicializarEnter();
     activarDropdown();
-
-    const input = document.getElementById('nombre_producto');
-    if (input) {
-        input.focus();
-        input.select();
-    }
+    inicializarPreviewWhatsApp();
 
     calcular();
 });
@@ -409,61 +424,95 @@ let indiceActivo = -1;
 
 
 // ===============================
-// 🔥 CARGAR PRODUCTOS (CACHE INTELIGENTE)
+// 🔥 ENFOCAR INPUT (SIN ABRIR DROPDOWN)
+// ===============================
+function enfocarProductoInicial() {
+    const input = document.getElementById('nombre_producto');
+    if (!input) return;
+
+    setTimeout(() => {
+        input.focus();
+        input.select();
+    }, 80);
+}
+
+// ===============================
+// 🔥 CARGAR PRODUCTOS (CACHE + FETCH)
+// ===============================
+// ===============================
+// 🔥 CARGAR PRODUCTOS (CACHE + EXPIRACIÓN + FETCH)
 // ===============================
 function cargarProductos() {
 
     const CACHE_KEY = 'productos';
     const CACHE_TIME_KEY = 'productos_time';
-    const EXPIRACION = 1000 * 60 * 10; // 🔥 10 minutos
+    const EXPIRACION = 1000 * 60 * 1; // 10 minutos
 
     const cache = localStorage.getItem(CACHE_KEY);
-    const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
-
+    const cacheTime = Number(localStorage.getItem(CACHE_TIME_KEY) || 0);
     const ahora = Date.now();
 
-    // 🔥 SI HAY CACHE Y NO HA EXPIRADO
+    // 🔥 1. cargar cache rápido
+    if (cache) {
+        try {
+            productos = JSON.parse(cache) || [];
+        } catch (e) {
+            productos = [];
+        }
+    }
+
+    // 🔥 2. enfocar input (sin abrir dropdown)
+    setTimeout(() => {
+        enfocarProductoInicial();
+    }, 80);
+
+    // 🔥 3. si cache aún válido, no consultar Sheets
     if (cache && cacheTime && (ahora - cacheTime < EXPIRACION)) {
-        productos = JSON.parse(cache);
-        console.log('⚡ Productos cargados desde cache');
+        console.log('⚡ Productos desde cache');
         return;
     }
 
-    console.log('🌐 Cargando productos desde Google Sheets...');
-
+    // 🔥 4. actualizar desde Sheets
     fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSWaRFQ7at60liEuEBqUPbHstZ3xyoygWpzJ1-V_XG4loTeDGztXJtfx-TiMZdUyrg7wSFsoimiiZQb/pub?output=csv')
         .then(res => res.text())
         .then(data => {
 
-            const lineas = data.split('\n');
+            const lineas = data.split('\n').filter(l => l.trim());
             lineas.shift();
 
             const usados = new Set();
-            productos = [];
+            const nuevosProductos = [];
 
             lineas.forEach(fila => {
 
-                const [nombre, precio] = fila.split(',');
+                const columnas = fila.split(',');
 
-                if (nombre) {
+                const nombre = (columnas[0] || '').trim();
+                const precioRaw = (columnas[1] || '').trim();
 
-                    const key = nombre.trim();
+                if (!nombre) return;
 
-                    if (usados.has(key)) return;
-                    usados.add(key);
+                const key = nombre.toLowerCase();
 
-                    productos.push({
-                        nombre: key,
-                        precio: precio ? parseFloat(precio) : 0 // 🔥 evita null
-                    });
-                }
+                if (usados.has(key)) return;
+                usados.add(key);
+
+                nuevosProductos.push({
+                    nombre,
+                    precio: precioRaw ? Number(precioRaw) || 0 : 0
+                });
             });
 
-            // 🔥 GUARDAR CACHE + TIEMPO
-            localStorage.setItem(CACHE_KEY, JSON.stringify(productos));
-            localStorage.setItem(CACHE_TIME_KEY, ahora);
+            // 🔥 reemplazar productos completamente
+            productos = nuevosProductos;
 
-            console.log('✅ Productos actualizados desde Sheets');
+            localStorage.setItem(CACHE_KEY, JSON.stringify(nuevosProductos));
+            localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+
+            console.log('🔄 Productos actualizados desde Sheets');
+        })
+        .catch(err => {
+            console.error('❌ Error cargando productos:', err);
         });
 }
 
@@ -536,7 +585,7 @@ function activarDropdown() {
         background: '#fff',
         border: '1px solid #ddd',
         borderRadius: '10px',
-        width: '600px', // 🔥 ancho grande
+        width: '600px',
         maxHeight: '350px',
         overflowY: 'auto',
         zIndex: '9999',
@@ -555,9 +604,14 @@ function activarDropdown() {
         dropdown.innerHTML = '';
         indiceActivo = -1;
 
-        const filtrados = productos.filter(p =>
-            p.nombre.toLowerCase().includes(valor.toLowerCase())
-        ); // 🔥 sin limite
+    const texto = valor.toLowerCase().trim();
+    const palabras = texto.split(/\s+/).filter(Boolean);
+
+    const filtrados = productos.filter(p => {
+    const nombre = p.nombre.toLowerCase();
+
+    return palabras.every(palabra => nombre.includes(palabra));
+});
 
         filtrados.forEach((p, index) => {
 
@@ -577,7 +631,7 @@ function activarDropdown() {
 
             item.addEventListener('mouseenter', () => {
                 indiceActivo = index;
-                actualizarHighlight(dropdown);
+                actualizarHighlight();
             });
 
             item.addEventListener('click', () => seleccionarProducto(p));
@@ -586,6 +640,16 @@ function activarDropdown() {
         });
 
         dropdown.style.display = filtrados.length ? 'block' : 'none';
+    }
+
+    // ===============================
+    // 🔥 HIGHLIGHT
+    // ===============================
+    function actualizarHighlight() {
+        Array.from(dropdown.children).forEach((item, i) => {
+            item.style.background = i === indiceActivo ? '#2563eb' : '#fff';
+            item.style.color = i === indiceActivo ? '#fff' : '#000';
+        });
     }
 
     // ===============================
@@ -602,25 +666,20 @@ function activarDropdown() {
     }
 
     // ===============================
-    // 🔥 HIGHLIGHT
+    // 🔥 INPUT
     // ===============================
-    function actualizarHighlight() {
+    input.addEventListener('input', function () {
+        render(this.value);
+    });
 
-        Array.from(dropdown.children).forEach((item, i) => {
-
-            item.style.background = i === indiceActivo ? '#2563eb' : '#fff';
-            item.style.color = i === indiceActivo ? '#fff' : '#000';
-        });
-    }
+    // 🔥 clic sí abre dropdown
+    input.addEventListener('click', function () {
+        render(this.value);
+    });
 
     // ===============================
-    // 🔥 EVENTOS INPUT
+    // 🔥 TECLADO
     // ===============================
-    input.addEventListener('input', () => render(input.value));
-
-    input.addEventListener('focus', () => render(input.value));
-    input.addEventListener('click', () => render(input.value));
-
     input.addEventListener('keydown', function (e) {
 
         const items = dropdown.children;
@@ -630,26 +689,40 @@ function activarDropdown() {
         }
 
         if (e.key === 'ArrowDown') {
+            if (dropdown.style.display === 'none') {
+                render(input.value);
+                return;
+            }
+
             e.preventDefault();
+
             indiceActivo = Math.min(indiceActivo + 1, items.length - 1);
             actualizarHighlight();
-            scrollToActivo(); // 🔥 FIX SCROLL
+            scrollToActivo();
         }
 
         if (e.key === 'ArrowUp') {
+            if (dropdown.style.display === 'none') return;
+
             e.preventDefault();
+
             indiceActivo = Math.max(indiceActivo - 1, 0);
             actualizarHighlight();
-            scrollToActivo(); // 🔥 FIX SCROLL
+            scrollToActivo();
         }
 
         if (e.key === 'Enter') {
+            if (dropdown.style.display === 'none') return;
+
             e.preventDefault();
 
             if (items[indiceActivo]) {
                 const nombre = items[indiceActivo].innerText.split(' - ')[0];
                 const producto = productos.find(p => p.nombre === nombre);
-                if (producto) seleccionarProducto(producto);
+
+                if (producto) {
+                    seleccionarProducto(producto);
+                }
             }
         }
     });
@@ -657,7 +730,7 @@ function activarDropdown() {
     // ===============================
     // 🔥 CERRAR
     // ===============================
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', function (e) {
         if (!dropdown.contains(e.target) && e.target !== input) {
             dropdown.style.display = 'none';
         }
@@ -713,7 +786,7 @@ function seleccionarProducto(producto) {
 
 
 // ===============================
-// 🔥 ENTER CIÓN
+// 🔥 ENTER NAVEGACIÓN
 // ===============================
 function inicializarEnter() {
 
@@ -882,53 +955,59 @@ filasHtml += `
         inputLic.value = precioFinalProducto.toFixed(2);
     }
 
+    actualizarPreviewWhatsApp();
+
 }
 
 
+// ===============================
+// 🔥 GENERAR TEXTO WHATSAPP
+// ===============================
+function generarTextoWhatsApp() {
 
+    const f = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2
+    });
 
-function copiarWhatsApp() {
+    const montoBase = Number(document.getElementById('monto').value) || 0;
+    const licenciaActiva = document.getElementById('checkLicencia')?.checked;
+    const licenciaExtra = licenciaActiva ? 500 : 0;
 
-    const inputTelef = document.getElementById('telefono_cliente');
-    let numero = (inputTelef.value || '').replace(/\D/g, '');
+    const precioFinalProducto = montoBase + licenciaExtra;
 
-    if (numero.length === 10) {
-        numero = '1' + numero;
-    }
+    const meses = Number(document.getElementById('plazo').value) || 0;
+    const frecuenciaFactor = Number(document.getElementById('frecuencia').value);
+    const numeroCuotas = meses * frecuenciaFactor;
 
-    const f = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 });
+    const frecTxt =
+        document.getElementById('frecuencia').selectedOptions[0].text;
 
-// 🔥 MISMA LÓGICA QUE CALCULAR
-const montoBase = Number(document.getElementById('monto').value) || 0;
-const licenciaActiva = document.getElementById('checkLicencia')?.checked;
-const licenciaExtra = licenciaActiva ? 500 : 0;
+    const precioProducto = f.format(precioFinalProducto);
+    const inicial =
+        f.format(Number(document.getElementById('inicial').value) || 0);
 
-const precioFinalProducto = montoBase + licenciaExtra;
+    const financiado =
+        document.getElementById('res-financiar').innerText || '0.00';
 
-// 🔥 CALCULAR TOTAL DE CUOTAS
-const meses = Number(document.getElementById('plazo').value) || 0;
-const frecuenciaFactor = Number(document.getElementById('frecuencia').value);
+    const accesorios =
+        f.format(Number(document.getElementById('accesorios').value) || 0);
 
-const numeroCuotas = meses * frecuenciaFactor;
+    const cuota =
+        document.getElementById('res-cuota').innerText || '0.00';
 
-// 🔥 TEXTOS
-const frecTxt = document.getElementById('frecuencia').selectedOptions[0].text;
+    const total =
+        document.getElementById('res-total').innerText || '0.00';
 
-// 🔥 FORMATOS
-const precioProducto = f.format(precioFinalProducto);
-const inicial = f.format(Number(document.getElementById('inicial').value) || 0);
-const financiado = document.getElementById('res-financiar').innerText;
-const accesorios = f.format(Number(document.getElementById('accesorios').value) || 0);
-const cuota = document.getElementById('res-cuota').innerText;
-const total = document.getElementById('res-total').innerText;
-const textoCuotas = `${numeroCuotas} cuota${numeroCuotas > 1 ? 's' : ''} (${frecTxt})`;
-const nombreProducto = document.getElementById('nombre_producto')?.value || 'Producto';
+    const textoCuotas =
+        `${numeroCuotas} cuota${numeroCuotas > 1 ? 's' : ''} (${frecTxt})`;
 
-    // 🔥 TEXTO DINÁMICO PRO
-    const texto = `RESUMEN DEL FINANCIAMIENTO CREDIPAY
+    const nombreProducto =
+        document.getElementById('nombre_producto')?.value || 'Producto';
+
+    return `RESUMEN DEL FINANCIAMIENTO CREDIPAY
 -----------------------------------
 📱 *Producto:* ${nombreProducto.toUpperCase()}
-💲 *Precio del Producto:* RD$${precioProducto} ${licenciaActiva ? '' : ''}
+💲 *Precio del Producto:* RD$${precioProducto}
 💵 *Inicial:* RD$${inicial}
 👜 *Accesorios:* RD$${accesorios}
 💰 *Monto a Financiar:* RD$${financiado}
@@ -943,14 +1022,88 @@ Complete su solicitud en el siguiente enlace:
 https://solicitud.prestamoscloud.com/solicitudes/i/credipay-
 
 Nuestros representantes le contactarán en un plazo de *24 a 72 horas*.`;
+}
 
+
+// ===============================
+// 🔥 PREVIEW DEL MENSAJE
+// ===============================
+function actualizarPreviewWhatsApp() {
+
+    const textarea = document.getElementById('preview-whatsapp');
+    if (!textarea) return;
+
+    textarea.value = generarTextoWhatsApp();
+}
+
+
+// ===============================
+// 🔥 COPIAR TEXTO PREVIEW
+// ===============================
+document.addEventListener('DOMContentLoaded', function () {
+
+    const btn = document.getElementById('copiar-preview');
+    const textarea = document.getElementById('preview-whatsapp');
+
+    if (!btn || !textarea) return;
+
+    btn.addEventListener('click', async function () {
+
+        const texto = textarea.value || '';
+        if (!texto) return;
+
+        let copiado = false;
+
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(texto);
+                copiado = true;
+            }
+        } catch (e) {}
+
+        if (!copiado) {
+            textarea.removeAttribute('readonly');
+            textarea.focus();
+            textarea.select();
+            textarea.setSelectionRange(0, 999999);
+
+            try {
+                copiado = document.execCommand('copy');
+            } catch (e) {}
+
+            textarea.setAttribute('readonly', true);
+        }
+
+        if (copiado) {
+            const original = btn.innerText;
+            btn.innerText = 'Copiado';
+
+            setTimeout(() => {
+                btn.innerText = original;
+            }, 1200);
+        }
+    });
+});
+
+// ===============================
+// 🔥 WHATSAPP
+// ===============================
+function copiarWhatsApp() {
+
+    const inputTelef = document.getElementById('telefono_cliente');
+    let numero = (inputTelef.value || '').replace(/\D/g, '');
+
+    if (numero.length === 10) {
+        numero = '1' + numero;
+    }
+
+    const texto = generarTextoWhatsApp();
     const mensaje = encodeURIComponent(texto);
 
-    // 🔥 Detectar dispositivo
     const esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
     if (esMovil) {
-        // 📱 Abre app directa
+
         const urlApp = `whatsapp://send?phone=${numero}&text=${mensaje}`;
         const urlWeb = `https://wa.me/${numero}?text=${mensaje}`;
 
@@ -961,15 +1114,19 @@ Nuestros representantes le contactarán en un plazo de *24 a 72 horas*.`;
         }, 1200);
 
     } else {
-        // 💻 PC → abre WhatsApp Web directo
-        const urlPC = `https://web.whatsapp.com/send?phone=${numero}&text=${mensaje}`;
+
+        const urlPC =
+            `https://web.whatsapp.com/send?phone=${numero}&text=${mensaje}`;
+
         window.open(urlPC, 'WhatsAppWindow');
     }
 }
 
 
-        window.onload = calcular;
-
+window.onload = function () {
+    calcular();
+    actualizarPreviewWhatsApp();
+};
         
     </script>
 
