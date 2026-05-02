@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotizador de Préstamos CrediPay</title>
+    <title>Cotizador CrediPay</title>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="icon" type="image/png" sizes="512x512" href="./img/favicon-512x512.png?v=13">
@@ -134,6 +134,11 @@
         </a>
     </div>
 -->
+    <button id="btnActualizar"
+    onclick="location.reload()"
+    class="hidden px-3 py-2 rounded bg-blue-600 text-white">
+    Actualizar
+    </button>
 
     <div class="max-w-6xl mx-auto">
         <header class="mb-8 text-center">
@@ -415,6 +420,15 @@ document.addEventListener('DOMContentLoaded', function () {
     inicializarEnter();
     activarDropdown();
     inicializarPreviewWhatsApp();
+
+    const esPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+    if (esPWA) {
+        const btn = document.getElementById('btnActualizar');
+        if (btn) {
+            btn.classList.remove('hidden');
+        }
+    }
 
     calcular();
 });
