@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cotizador de Préstamos CrediPay</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="icon" type="image/png" sizes="512x512" href="./img/favicon-512x512.png?v=12">
     
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -1074,12 +1076,21 @@ document.addEventListener('DOMContentLoaded', function () {
             textarea.setAttribute('readonly', true);
         }
 
-        if (copiado) {
-            const original = btn.innerText;
+           if (copiado) {
+            const originalText = btn.innerText;
+            const originalClasses = btn.className; // Guarda el diseño original
+
             btn.innerText = 'Copiado';
+            
+            // Esto elimina el azul y pone verde (usando !important con Tailwind si fuera necesario)
+            btn.style.backgroundColor = '#22c55e'; // Color verde (green-500)
+            btn.style.borderColor = '#16a34a';     // Borde verde (green-600)
 
             setTimeout(() => {
-                btn.innerText = original;
+                btn.innerText = originalText;
+                // Limpia los estilos manuales para que vuelva a su CSS original
+                btn.style.backgroundColor = '';
+                btn.style.borderColor = '';
             }, 1200);
         }
     });
