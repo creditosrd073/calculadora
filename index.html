@@ -858,15 +858,10 @@ function calcular() {
     const accesorios = Number(document.getElementById('accesorios').value) || 0;
 
     const licenciaExtra = document.getElementById('checkLicencia')?.checked ? 500 : 0;
-    const precioFinalProducto = montoBase + licenciaExtra;
+    const precioFinalProducto = montoBase + licenciaExtra + accesorios;
 
     if (inicial > precioFinalProducto) {
     mostrarError('⚠️ El pago inicial no puede ser mayor al precio del producto');
-    return;
-}
-
-    if (accesorios > precioFinalProducto) {
-    mostrarError('⚠️ Los accesorios no pueden superar el precio del producto');
     return;
 }
 
@@ -884,7 +879,7 @@ function mostrarError(msg) {
     const frecuenciaFactor = Number(document.getElementById('frecuencia').value);
     const sistema = document.getElementById('sistema').value;
 
-    const capitalAFinanciar = (precioFinalProducto + accesorios) - inicial;
+    const capitalAFinanciar = precioFinalProducto - inicial;
 
     const numeroPagos = mesesPlazo * frecuenciaFactor;
     const tasaPeriodica = tasaMensual / frecuenciaFactor;
@@ -991,8 +986,9 @@ function generarTextoWhatsApp() {
     const montoBase = Number(document.getElementById('monto').value) || 0;
     const licenciaActiva = document.getElementById('checkLicencia')?.checked;
     const licenciaExtra = licenciaActiva ? 500 : 0;
+    const accesoriosVal = Number(document.getElementById('accesorios').value) || 0;
 
-    const precioFinalProducto = montoBase + licenciaExtra;
+    const precioFinalProducto = montoBase + licenciaExtra + accesoriosVal;
 
     const meses = Number(document.getElementById('plazo').value) || 0;
     const frecuenciaFactor = Number(document.getElementById('frecuencia').value);
